@@ -6,27 +6,38 @@
 #define DRL_PIN D8
 #define LED_PIN_L   D5
 #define LED_PIN_R   D7
+#define OPT_LED_L   D0 //test if these work
+#define OPT_LED_R   D3 //test if these work
+#define OP_LED D4
 
-#define NUM_LEDS    40
+#define NUM_LEDS    30
+#define NUM_LEDS_OPT 14
 #define BRIGHTNESS  255
 #define LED_TYPE    WS2812B
 #define COLOR_ORDER RGB
+
 CRGB leds_l[NUM_LEDS];
 CRGB leds_r[NUM_LEDS];
+CRGB leds_opt_l[NUM_LEDS_OPT];
+CRGB leds_opt_r[NUM_LEDS_OPT];
 
 #define UPDATES_PER_SECOND 500
 
+//this are shared across all leds for normal use
 #define DIR_R 255
 #define DIR_G 80
 #define DIR_B 0
 
 #define DRL_R 255
-#define DRL_G 125
-#define DRL_B 120
+#define DRL_G 150
+#define DRL_B 140
 
 #define DRL_WAIT 200
 
 #define DEBOUNCE_TIME 10
+
+//comment out this line for normal sequential write setting
+#define INVERTED_SEQ
 
 uint32_t lastSeqWrite = 0;
 uint32_t newDRLWriteWait = 1000;
@@ -39,11 +50,11 @@ uint32_t newDRLWriteWait = 1000;
 #include "webpage.h"
 
 // Replace with your network credentials
-const char* ssid = "LisbyLED";
-const char* password = "lisby12345";
+const char* ssid = "AlfaLED";
+const char* password = "alfa12345";
 
-IPAddress local_IP(192,168,4,22);
-IPAddress gateway(192,168,4,9);
+IPAddress local_IP(192,168,1,2);
+IPAddress gateway(192,168,1,1);
 IPAddress subnet(255,255,255,0);
 
 bool sp_mode = false;
@@ -113,12 +124,16 @@ void modoTombo(){
 }
 
 void sequentialWrite(auto led_to_write[], int rampDelay = 1, int offDelay = 200){
-  Serial.println("SeqWriteStart");
+  Serial.println("Sequential write");
   //Serial.println(typeid(led_to_write).name());
 
   for(int i=0; i<NUM_LEDS;i++){
+    #if defined(INVERTED_SEQ)
+    led_to_write[NUM_LEDS-i-1].setRGB(DIR_R,DIR_G,DIR_B);
+    #else
     led_to_write[i].setRGB(DIR_R,DIR_G,DIR_B);
-
+    #endif
+  
     FastLED.show();
     FastLED.delay(rampDelay);
   }
@@ -132,13 +147,21 @@ void sequentialWrite(auto led_to_write[], int rampDelay = 1, int offDelay = 200)
   Serial.println("SeqWriteEnd");
 }
 
+
 void dualSequentialWrite(auto led1_to_write[], auto led2_to_write[], int rampDelay = 1, int offDelay = 200){
-  Serial.println("DualSeqWriteStart");
+  Serial.println("Dual Sequential Write");
   //Serial.println(typeid(led_to_write).name());
 
   for(int i=0; i<NUM_LEDS;i++){
+    #if defined(INVERTED_SEQ)
+    led1_to_write[NUM_LEDS-i-1].setRGB(DIR_R,DIR_G,DIR_B);
+    led2_to_write[NUM_LEDS-i-1].setRGB(DIR_R,DIR_G,DIR_B);
+    #else
     led1_to_write[i].setRGB(DIR_R,DIR_G,DIR_B);
     led2_to_write[i].setRGB(DIR_R,DIR_G,DIR_B);
+    #endif
+
+    
 
     FastLED.show();
     FastLED.delay(rampDelay);
@@ -154,6 +177,8 @@ void dualSequentialWrite(auto led1_to_write[], auto led2_to_write[], int rampDel
   Serial.println("DualSeqWriteEnd");
 }
 
+bool opt_led_ena = false;
+
 void DRLWrite(int red, int green, int blue){
   //Serial.println("DRL_write");
   for(int i=0; i<NUM_LEDS;i++){
@@ -164,20 +189,34 @@ void DRLWrite(int red, int green, int blue){
     if(DIR_L_STATUS)leds_l[i].setRGB(red,green,blue);
     if(DIR_R_STATUS)leds_r[i].setRGB(red,green,blue);
 
+    if(opt_led_ena&&DIR_L_STATUS)leds_opt_l[i].setRGB(red,green,blue);
+    if(opt_led_ena&&DIR_R_STATUS)leds_opt_r[i].setRGB(red,green,blue);
+
   }
   FastLED.show();
 }
-
+bool dualFlag=false;
 void mainStateMachine(){
-  if(!digitalRead(DIR_PIN_L)&&digitalRead(DIR_PIN_R)){
-    sequentialWrite(leds_l,2, 200);
+  if(!digitalRead(DIR_PIN_R)&&!digitalRead(DIR_PIN_L)||dualFlag==true){
+    dualSequentialWrite(leds_l, leds_r, 5, 200);
     lastSeqWrite=millis();
+    dualFlag=false;
   }else if(!digitalRead(DIR_PIN_R)&&digitalRead(DIR_PIN_L)){
-    sequentialWrite(leds_r,2, 200);
-    lastSeqWrite=millis();
-  }else if(!digitalRead(DIR_PIN_R)&&!digitalRead(DIR_PIN_L)){
-    dualSequentialWrite(leds_l, leds_r, 2, 200);
-    lastSeqWrite=millis();
+    delay(5);
+    if(!digitalRead(DIR_PIN_R)&&!digitalRead(DIR_PIN_L)){
+      dualFlag=true;
+    }else{
+      sequentialWrite(leds_r,5, 200);
+      lastSeqWrite=millis(); 
+    }  
+  }else if(!digitalRead(DIR_PIN_L)&&digitalRead(DIR_PIN_R)){
+    delay(5);
+    if(!digitalRead(DIR_PIN_R)&&!digitalRead(DIR_PIN_L)){
+      dualFlag=true;
+    }else{
+      sequentialWrite(leds_l,5, 200);
+      lastSeqWrite=millis(); 
+    }
   }else if(!digitalRead(DRL_PIN)&&((millis()-lastSeqWrite)>=newDRLWriteWait)){
     DRLWrite(DRL_R,DRL_G,DRL_B);
   }else if((millis()-lastSeqWrite)>=newDRLWriteWait){
@@ -240,6 +279,7 @@ void setup(){
   // Serial port for debugging purposes
   Serial.begin(115200);
 
+  pinMode(OP_LED,OUTPUT);
   pinMode(ledPin, OUTPUT);
   digitalWrite(ledPin, LOW);
 
@@ -277,6 +317,7 @@ void setup(){
 }
 uint32_t currtime = 0;
 uint32_t last_ctime = 0;
+bool op_led_stat=false;
 
 void loop(){
   currtime = millis();
@@ -287,6 +328,10 @@ void loop(){
     digitalWrite(ledPin, sp_mode);
     //Serial.println(sp_mode);
     last_ctime=currtime;
+
+    //Just write the onboard LED for debug (runtime status)
+    digitalWrite(OP_LED,op_led_stat);
+    op_led_stat=!op_led_stat;
   }
 
   //fastLED handler
