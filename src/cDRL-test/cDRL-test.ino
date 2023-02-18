@@ -213,31 +213,44 @@ void DRLWrite(int red, int green, int blue){
   FastLED.show();
 }
 
+void DRLWriteTEST(int red, int green, int blue){
+  Serial.println("DRL_write");
+  for(int i=0; i<NUM_LEDS;i++){
+    leds_l[i].setRGB(red,green,blue);
+    leds_r[i].setRGB(red,green,blue);
+
+    leds_opt_l[i].setRGB(red,green,blue);
+    leds_opt_r[i].setRGB(red,green,blue);
+
+  }
+  FastLED.show();
+}
+
 bool dualFlag=false;
 void mainStateMachine(){
-  if(!digitalRead(DIR_PIN_R)&&!digitalRead(DIR_PIN_L)||dualFlag==true){
+  if(!digitalRead(DIR_PIN_R)&&!digitalRead(DIR_PIN_L)||dualFlag==true){ //Secuencial dual (emergency blinkers)
     dualSequentialWrite(leds_l, leds_r, leds_opt_l, leds_opt_r, 5, 200);
     lastSeqWrite=millis();
     dualFlag=false;
-  }else if(!digitalRead(DIR_PIN_R)&&digitalRead(DIR_PIN_L)){
+  }else if(!digitalRead(DIR_PIN_R)&&digitalRead(DIR_PIN_L)){ //DIR R
     delay(5);
-    if(!digitalRead(DIR_PIN_R)&&!digitalRead(DIR_PIN_L)){
+    if(!digitalRead(DIR_PIN_R)&&!digitalRead(DIR_PIN_L)){ //check if dual write is needed
       dualFlag=true;
-    }else{
+    }else{ //dir derecha normal
       sequentialWrite(leds_r,leds_opt_r,5, 200);
       lastSeqWrite=millis(); 
     }  
-  }else if(!digitalRead(DIR_PIN_L)&&digitalRead(DIR_PIN_R)){
+  }else if(!digitalRead(DIR_PIN_L)&&digitalRead(DIR_PIN_R)){ //DIR L
     delay(5);
-    if(!digitalRead(DIR_PIN_R)&&!digitalRead(DIR_PIN_L)){
+    if(!digitalRead(DIR_PIN_R)&&!digitalRead(DIR_PIN_L)){ //check if dual write is needed
       dualFlag=true;
-    }else{
+    }else{ //dir izquerda normal
       sequentialWrite(leds_l,leds_opt_l,5, 200);
       lastSeqWrite=millis(); 
     }
-  }else if(!digitalRead(DRL_PIN)&&((millis()-lastSeqWrite)>=newDRLWriteWait)){
+  }else if(!digitalRead(DRL_PIN)&&((millis()-lastSeqWrite)>=newDRLWriteWait)){ //DRL active but wait for dir to stop
     DRLWrite(DRL_R,DRL_G,DRL_B);
-  }else if((millis()-lastSeqWrite)>=newDRLWriteWait){
+  }else if((millis()-lastSeqWrite)>=newDRLWriteWait){ //turn off after shutdown
     DRLWrite(0,0,0);
   }
 }
@@ -343,7 +356,7 @@ bool op_led_stat=false;
 void loop(){
   currtime = millis();
 
-  if(currtime-last_ctime>1000){
+  if(currtime-last_ctime>2000){
     //web server handler
     ws.cleanupClients();
     digitalWrite(ledPin, sp_mode);
@@ -357,7 +370,11 @@ void loop(){
 
   //fastLED handler
   if(!sp_mode){
-    mainStateMachine();
+    //mainStateMachine();
+    DRLWriteTEST(255, 0, 255);
+    delay(1000);
+    DRLWriteTEST(0,0,0);
+    delay(500);
   }else{
     modoTombo();
   }
