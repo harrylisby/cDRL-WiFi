@@ -228,28 +228,21 @@ void DRLWriteTEST(int red, int green, int blue){
 
 bool dualFlag=false;
 void mainStateMachine(){
-  if(!digitalRead(DIR_PIN_R)&&!digitalRead(DIR_PIN_L)||dualFlag==true){ //Secuencial dual (emergency blinkers)
+  if(!digitalRead(DIR_PIN_R)&&!digitalRead(DIR_PIN_L)){ //Secuencial dual (emergency blinkers)
     dualSequentialWrite(leds_l, leds_r, leds_opt_l, leds_opt_r, 5, 200);
     lastSeqWrite=millis();
-    dualFlag=false;
+    
   }else if(!digitalRead(DIR_PIN_R)&&digitalRead(DIR_PIN_L)){ //DIR R
-    delay(5);
-    if(!digitalRead(DIR_PIN_R)&&!digitalRead(DIR_PIN_L)){ //check if dual write is needed
-      dualFlag=true;
-    }else{ //dir derecha normal
       sequentialWrite(leds_r,leds_opt_r,5, 200);
       lastSeqWrite=millis(); 
-    }  
+    
   }else if(!digitalRead(DIR_PIN_L)&&digitalRead(DIR_PIN_R)){ //DIR L
-    delay(5);
-    if(!digitalRead(DIR_PIN_R)&&!digitalRead(DIR_PIN_L)){ //check if dual write is needed
-      dualFlag=true;
-    }else{ //dir izquerda normal
       sequentialWrite(leds_l,leds_opt_l,5, 200);
       lastSeqWrite=millis(); 
-    }
+    
   }else if(!digitalRead(DRL_PIN)&&((millis()-lastSeqWrite)>=newDRLWriteWait)){ //DRL active but wait for dir to stop
     DRLWrite(DRL_R,DRL_G,DRL_B);
+    
   }else if((millis()-lastSeqWrite)>=newDRLWriteWait){ //turn off after shutdown
     DRLWrite(0,0,0);
   }
