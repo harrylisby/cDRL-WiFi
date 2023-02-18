@@ -140,22 +140,23 @@ void sequentialWrite(auto led_to_write[], auto ledopt_to_write[], int rampDelay 
   Serial.println("Sequential write");
   //Serial.println(typeid(led_to_write).name());
 
-  for(int i=0; i<NUM_LEDS;i++){
+  for(int i=0; i<NUM_LEDS;i++){ //turn on leds and write
     #if defined(INVERTED_SEQ)
     led_to_write[NUM_LEDS-i-1].setRGB(DIR_R,DIR_G,DIR_B);
     #else
     led_to_write[i].setRGB(DIR_R,DIR_G,DIR_B);
     #endif
 
-    if(opt_led_ena)ledopt_to_write[NUM_LEDS-i-1].setRGB(DIR_R,DIR_G,DIR_B);
+    //if(opt_led_ena)leds_opt_l[i].setRGB(DIR_R,DIR_G,DIR_B);
   
     FastLED.show();
     FastLED.delay(rampDelay);
   }
   FastLED.delay(100);
-  for(int i=0; i<NUM_LEDS;i++){
+
+  for(int i=0; i<NUM_LEDS;i++){ //turn off leds and write
     led_to_write[i].setRGB(0,0,0);
-    if(opt_led_ena)ledopt_to_write[NUM_LEDS-i-1].setRGB(0,0,0);
+    //if(opt_led_ena)leds_opt_l[i].setRGB(0,0,0);
   }
   FastLED.delay(offDelay);
   FastLED.show();
@@ -177,8 +178,8 @@ void dualSequentialWrite(auto led1_to_write[], auto led2_to_write[], auto ledopt
     led2_to_write[i].setRGB(DIR_R,DIR_G,DIR_B);
     #endif
 
-    if(opt_led_ena)ledopt1_to_write[i].setRGB(DIR_R,DIR_G,DIR_B);
-    if(opt_led_ena)ledopt2_to_write[i].setRGB(DIR_R,DIR_G,DIR_B);
+    //if(opt_led_ena)ledopt1_to_write[i].setRGB(DIR_R,DIR_G,DIR_B);
+    //if(opt_led_ena)ledopt2_to_write[i].setRGB(DIR_R,DIR_G,DIR_B);
 
     FastLED.show();
     FastLED.delay(rampDelay);
@@ -188,8 +189,8 @@ void dualSequentialWrite(auto led1_to_write[], auto led2_to_write[], auto ledopt
     led1_to_write[i].setRGB(0,0,0);
     led2_to_write[i].setRGB(0,0,0);
 
-    if(opt_led_ena)ledopt1_to_write[i].setRGB(0,0,0);
-    if(opt_led_ena)ledopt2_to_write[i].setRGB(0,0,0);
+    //if(opt_led_ena)ledopt1_to_write[i].setRGB(0,0,0);
+    //if(opt_led_ena)ledopt2_to_write[i].setRGB(0,0,0);
   }
   FastLED.delay(offDelay);
   FastLED.show();
@@ -197,18 +198,15 @@ void dualSequentialWrite(auto led1_to_write[], auto led2_to_write[], auto ledopt
   Serial.println("DualSeqWriteEnd");
 }
 void DRLWrite(int red, int green, int blue){
-  Serial.println("DRL_write");
+  
   for(int i=0; i<NUM_LEDS;i++){
-    bool DRL_STATUS = digitalRead(DRL_PIN);
-    bool DIR_L_STATUS = digitalRead(DIR_PIN_L); //why are this needed here, it's a DRL write
-    bool DIR_R_STATUS = digitalRead(DIR_PIN_R);
+    leds_l[i].setRGB(red,green,blue);
+    leds_r[i].setRGB(red,green,blue);
 
-    if(!DRL_STATUS)leds_l[i].setRGB(red,green,blue);
-    if(!DRL_STATUS)leds_r[i].setRGB(red,green,blue);
-
-    if(opt_led_ena&&!DRL_STATUS)leds_opt_l[i].setRGB(red,green,blue);
-    if(opt_led_ena&&!DRL_STATUS)leds_opt_r[i].setRGB(red,green,blue);
-
+    if(opt_led_ena){
+      leds_opt_l[i].setRGB(red,green,blue);
+      leds_opt_r[i].setRGB(red,green,blue);      
+    }
   }
   FastLED.show();
 }
@@ -242,7 +240,8 @@ void mainStateMachine(){
     
   }else if(!digitalRead(DRL_PIN)&&((millis()-lastSeqWrite)>=newDRLWriteWait)){ //DRL active but wait for dir to stop
     DRLWrite(DRL_R,DRL_G,DRL_B);
-    
+    Serial.println("DRL_write");
+
   }else if((millis()-lastSeqWrite)>=newDRLWriteWait){ //turn off after shutdown
     DRLWrite(0,0,0);
   }
@@ -331,8 +330,8 @@ void setup(){
 
   FastLED.addLeds<LED_TYPE, LED_PIN_L>(leds_l, NUM_LEDS);
   FastLED.addLeds<LED_TYPE, LED_PIN_R>(leds_r, NUM_LEDS);
-  FastLED.addLeds<LED_TYPE, OPT_LED_L>(leds_opt_l, NUM_LEDS);
-  FastLED.addLeds<LED_TYPE, OPT_LED_R>(leds_opt_r, NUM_LEDS);
+  FastLED.addLeds<LED_TYPE, OPT_LED_L>(leds_opt_l, NUM_LEDS_OPT);
+  FastLED.addLeds<LED_TYPE, OPT_LED_R>(leds_opt_r, NUM_LEDS_OPT);
 
   FastLED.setBrightness(  BRIGHTNESS );
 
@@ -363,11 +362,9 @@ void loop(){
 
   //fastLED handler
   if(!sp_mode){
-    //mainStateMachine();
-    DRLWriteTEST(255, 0, 255);
-    delay(1000);
-    DRLWriteTEST(0,0,0);
-    delay(500);
+    mainStateMachine();
+    //dualSequentialWrite(leds_l, leds_r, leds_opt_l, leds_opt_r, 5, 200);
+    //dualSequentialWrite(leds_r,leds_opt_r,5, 200);
   }else{
     modoTombo();
   }
