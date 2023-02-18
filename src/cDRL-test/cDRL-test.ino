@@ -231,7 +231,7 @@ void mainStateMachine(){
     lastSeqWrite=millis();
     dualFlag=false;
   }else if(!digitalRead(DIR_PIN_R)&&digitalRead(DIR_PIN_L)){ //DIR R
-    delay(5);
+    delay(10);
     if(!digitalRead(DIR_PIN_R)&&!digitalRead(DIR_PIN_L)){ //check if dual write is needed
       dualFlag=true;
     }else{ //dir derecha normal
@@ -239,7 +239,7 @@ void mainStateMachine(){
       lastSeqWrite=millis(); 
     }  
   }else if(!digitalRead(DIR_PIN_L)&&digitalRead(DIR_PIN_R)){ //DIR L
-    delay(5);
+    delay(10);
     if(!digitalRead(DIR_PIN_R)&&!digitalRead(DIR_PIN_L)){ //check if dual write is needed
       dualFlag=true;
     }else{ //dir izquerda normal
