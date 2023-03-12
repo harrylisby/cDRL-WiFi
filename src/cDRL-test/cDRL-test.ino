@@ -21,7 +21,7 @@
 #define OPT_LED_R   D3 //test if these work
 #define STATUS_LED D4 //indicator led
 
-#define NUM_LEDS    30
+#define NUM_LEDS    66
 #define NUM_LEDS_OPT 14
 #define BRIGHTNESS  255
 #define LED_TYPE    WS2812B
@@ -44,7 +44,7 @@ CRGB leds_opt_r[NUM_LEDS_OPT];
 #define DRL_B 140
 
 #define DRL_WAIT 200
-
+#define DSEQ_WAIT 20
 #define DEBOUNCE_TIME 10
 
 //comment out this line for normal sequential write setting
@@ -195,7 +195,7 @@ void dualSequentialWrite(auto led1_to_write[], auto led2_to_write[], auto ledopt
   FastLED.delay(offDelay);
   FastLED.show();
 
-  Serial.println("DualSeqWriteEnd");
+  //Serial.println("DualSeqWriteEnd");
 }
 void DRLWrite(int red, int green, int blue){
   
@@ -231,7 +231,7 @@ void mainStateMachine(){
     lastSeqWrite=millis();
     dualFlag=false;
   }else if(!digitalRead(DIR_PIN_R)&&digitalRead(DIR_PIN_L)){ //DIR R
-    delay(10);
+    delay(DSEQ_WAIT);
     if(!digitalRead(DIR_PIN_R)&&!digitalRead(DIR_PIN_L)){ //check if dual write is needed
       dualFlag=true;
     }else{ //dir derecha normal
@@ -239,7 +239,7 @@ void mainStateMachine(){
       lastSeqWrite=millis(); 
     }  
   }else if(!digitalRead(DIR_PIN_L)&&digitalRead(DIR_PIN_R)){ //DIR L
-    delay(10);
+    delay(DSEQ_WAIT);
     if(!digitalRead(DIR_PIN_R)&&!digitalRead(DIR_PIN_L)){ //check if dual write is needed
       dualFlag=true;
     }else{ //dir izquerda normal
