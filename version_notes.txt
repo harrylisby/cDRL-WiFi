@@ -1,0 +1,3 @@
+engell_mustang_3bar_animation:
+	- Only changes sequential write functions
+	- Writes 3 bars instead of independent lights

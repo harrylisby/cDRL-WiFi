@@ -70,6 +70,11 @@ IPAddress subnet(255,255,255,0);
 
 bool sp_mode = false;
 const int ledPin = 2;
+bool dualFlag=false;
+bool opt_led_ena = true;
+uint32_t currtime = 0;
+uint32_t last_ctime = 0;
+bool op_led_stat=false;
 
 // Create AsyncWebServer object on port 80
 AsyncWebServer server(80);
@@ -134,8 +139,6 @@ void modoTombo(){
   FastLED.delay(350);
 }
 
-bool opt_led_ena = true;
-
 void sequentialWrite(auto led_to_write[], auto ledopt_to_write[], int rampDelay = 1, int offDelay = 200){
   Serial.println("Sequential write");
   //Serial.println(typeid(led_to_write).name());
@@ -161,9 +164,62 @@ void sequentialWrite(auto led_to_write[], auto ledopt_to_write[], int rampDelay 
   FastLED.delay(offDelay);
   FastLED.show();
 
-  Serial.println("SeqWriteEnd");
+  
 }
 
+//limiting constants
+#define BAR1 22
+#define BAR2 44
+#define BAR3 66
+
+void triBarWrite(auto led_to_write[], int barDelay = 1, int offDelay = 200){
+  Serial.println("Tri-Bar Write");
+
+  for(int i=0; i<BAR1; i++)led_to_write[i].setRGB(DIR_R,DIR_G,DIR_B);
+  FastLED.show();
+  FastLED.delay(barDelay);
+  for(int i=BAR1; i<BAR2; i++)led_to_write[i].setRGB(DIR_R,DIR_G,DIR_B);
+  FastLED.show();
+  FastLED.delay(barDelay);
+  for(int i=BAR2; i<BAR3; i++)led_to_write[i].setRGB(DIR_R,DIR_G,DIR_B);
+  FastLED.show();
+  FastLED.delay(barDelay);
+  for(int i=0; i<NUM_LEDS;i++)led_to_write[i].setRGB(0,0,0);
+  FastLED.delay(offDelay);
+  FastLED.show();  
+  
+}
+
+void triBarDualSequentialWrite(auto led1_to_write[], auto led2_to_write[], int barDelay = 1, int offDelay = 200){
+  Serial.println("TriBar Dual Sequential Write");
+
+  for(int i=0; i<NUM_LEDS;i++){
+    for(int i=0; i<BAR1; i++){
+      led1_to_write[i].setRGB(DIR_R,DIR_G,DIR_B);
+      led2_to_write[i].setRGB(DIR_R,DIR_G,DIR_B);
+      }
+    FastLED.show();
+    FastLED.delay(barDelay);
+    for(int i=BAR1; i<BAR2; i++){
+      led1_to_write[i].setRGB(DIR_R,DIR_G,DIR_B);
+      led2_to_write[i].setRGB(DIR_R,DIR_G,DIR_B);
+      }
+    FastLED.show();
+    FastLED.delay(barDelay);
+    for(int i=BAR2; i<BAR3; i++){
+      led1_to_write[i].setRGB(DIR_R,DIR_G,DIR_B);
+      led2_to_write[i].setRGB(DIR_R,DIR_G,DIR_B);
+      }
+    FastLED.show();
+    FastLED.delay(barDelay);
+    for(int i=0; i<NUM_LEDS;i++){
+      led1_to_write[i].setRGB(0,0,0);
+      led2_to_write[i].setRGB(0,0,0);
+      }
+    FastLED.delay(offDelay);
+    FastLED.show();  
+ 
+}
 
 void dualSequentialWrite(auto led1_to_write[], auto led2_to_write[], auto ledopt1_to_write[], auto ledopt2_to_write[], int rampDelay = 1, int offDelay = 200){
   Serial.println("Dual Sequential Write");
@@ -197,6 +253,7 @@ void dualSequentialWrite(auto led1_to_write[], auto led2_to_write[], auto ledopt
 
   //Serial.println("DualSeqWriteEnd");
 }
+
 void DRLWrite(int red, int green, int blue){
   
   for(int i=0; i<NUM_LEDS;i++){
@@ -224,10 +281,9 @@ void DRLWriteTEST(int red, int green, int blue){
   FastLED.show();
 }
 
-bool dualFlag=false;
 void mainStateMachine(){
   if(!digitalRead(DIR_PIN_R)&&!digitalRead(DIR_PIN_L)||dualFlag==true){ //Secuencial dual (emergency blinkers)
-    dualSequentialWrite(leds_l, leds_r, leds_opt_l, leds_opt_r, 5, 200);
+    triBarDualSequentialWrite(leds_l, leds_r, 5, 200);
     lastSeqWrite=millis();
     dualFlag=false;
   }else if(!digitalRead(DIR_PIN_R)&&digitalRead(DIR_PIN_L)){ //DIR R
@@ -235,7 +291,7 @@ void mainStateMachine(){
     if(!digitalRead(DIR_PIN_R)&&!digitalRead(DIR_PIN_L)){ //check if dual write is needed
       dualFlag=true;
     }else{ //dir derecha normal
-      sequentialWrite(leds_r,leds_opt_r,5, 200);
+      triBarWrite(leds_r, 200, 200);
       lastSeqWrite=millis(); 
     }  
   }else if(!digitalRead(DIR_PIN_L)&&digitalRead(DIR_PIN_R)){ //DIR L
@@ -243,7 +299,7 @@ void mainStateMachine(){
     if(!digitalRead(DIR_PIN_R)&&!digitalRead(DIR_PIN_L)){ //check if dual write is needed
       dualFlag=true;
     }else{ //dir izquerda normal
-      sequentialWrite(leds_l,leds_opt_l,5, 200);
+      triBarWrite(leds_l, 200, 200);
       lastSeqWrite=millis(); 
     }
   }else if(!digitalRead(DRL_PIN)&&((millis()-lastSeqWrite)>=newDRLWriteWait)){ //DRL active but wait for dir to stop
@@ -347,9 +403,6 @@ void setup(){
   pinMode(DRL_PIN, INPUT_PULLUP);
 
 }
-uint32_t currtime = 0;
-uint32_t last_ctime = 0;
-bool op_led_stat=false;
 
 void loop(){
   currtime = millis();
