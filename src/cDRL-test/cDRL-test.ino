@@ -61,8 +61,8 @@ uint32_t newDRLWriteWait = 1000;
 #include "webpage.h"
 
 // Replace with your network credentials
-const char* ssid = "AlfaLED";
-const char* password = "alfa12345";
+const char* ssid = "EngellLED";
+const char* password = "engell12345";
 
 IPAddress local_IP(192,168,1,2);
 IPAddress gateway(192,168,1,1);
@@ -189,7 +189,7 @@ void triBarWrite(auto led_to_write[], int barDelay = 1, int offDelay = 200){
   FastLED.show();  
   
 }
-
+/*
 void triBarDualSequentialWrite(auto led1_to_write[], auto led2_to_write[], int barDelay = 1, int offDelay = 200){
   Serial.println("TriBar Dual Sequential Write");
 
@@ -219,7 +219,7 @@ void triBarDualSequentialWrite(auto led1_to_write[], auto led2_to_write[], int b
     FastLED.delay(offDelay);
     FastLED.show();  
  
-}
+}*/
 
 void dualSequentialWrite(auto led1_to_write[], auto led2_to_write[], auto ledopt1_to_write[], auto ledopt2_to_write[], int rampDelay = 1, int offDelay = 200){
   Serial.println("Dual Sequential Write");
@@ -260,10 +260,6 @@ void DRLWrite(int red, int green, int blue){
     leds_l[i].setRGB(red,green,blue);
     leds_r[i].setRGB(red,green,blue);
 
-    if(opt_led_ena){
-      leds_opt_l[i].setRGB(red,green,blue);
-      leds_opt_r[i].setRGB(red,green,blue);      
-    }
   }
   FastLED.show();
 }
@@ -283,7 +279,7 @@ void DRLWriteTEST(int red, int green, int blue){
 
 void mainStateMachine(){
   if(!digitalRead(DIR_PIN_R)&&!digitalRead(DIR_PIN_L)||dualFlag==true){ //Secuencial dual (emergency blinkers)
-    triBarDualSequentialWrite(leds_l, leds_r, 5, 200);
+    dualSequentialWrite(leds_l, leds_r, leds_opt_l, leds_opt_r, 5, 200);
     lastSeqWrite=millis();
     dualFlag=false;
   }else if(!digitalRead(DIR_PIN_R)&&digitalRead(DIR_PIN_L)){ //DIR R
@@ -304,7 +300,7 @@ void mainStateMachine(){
     }
   }else if(!digitalRead(DRL_PIN)&&((millis()-lastSeqWrite)>=newDRLWriteWait)){ //DRL active but wait for dir to stop
     DRLWrite(DRL_R,DRL_G,DRL_B);
-  }else if((millis()-lastSeqWrite)>=newDRLWriteWait){ //turn off after shutdown
+  }else if(((millis()-lastSeqWrite)>=newDRLWriteWait)){ //turn off after shutdown
     DRLWrite(0,0,0);
   }
 }
