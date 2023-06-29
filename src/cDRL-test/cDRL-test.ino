@@ -13,15 +13,15 @@
 
 //IO
 #define DIR_PIN_L D1
-#define DIR_PIN_R D2
-#define DRL_PIN D0
+#define DIR_PIN_R D0
+#define DRL_PIN D2
 #define LED_PIN_L   D5
 #define LED_PIN_R   D7
 #define OPT_LED_L   D8 //test if these work
 #define OPT_LED_R   D3 //test if these work
 #define STATUS_LED D4 //indicator led
 
-#define NUM_LEDS    66
+#define NUM_LEDS    27
 #define NUM_LEDS_OPT 14
 #define BRIGHTNESS  255
 #define LED_TYPE    WS2812B
@@ -95,14 +95,14 @@ void modoTombo(){
   int flashes = 2;
 
   for(int x = 0; x < flashes; x++){
-    for(int i=0; i<19; i++){
+    for(int i=0; i<14; i++){
       leds_l[i].setRGB(0,0,255);
       leds_r[i].setRGB(0,0,255);
     }
     FastLED.show();
     FastLED.delay(100);
 
-    for(int i=0; i<19; i++){
+    for(int i=0; i<14; i++){
       leds_l[i].setRGB(0,0,0);
       leds_r[i].setRGB(0,0,0);
     }
@@ -111,14 +111,14 @@ void modoTombo(){
   }
 
   for(int x = 0; x < flashes; x++){
-    for(int i=20; i<39; i++){
+    for(int i=15; i<NUM_LEDS; i++){
       leds_l[i].setRGB(255,0,0);
       leds_r[i].setRGB(255,0,0);
     }
     FastLED.show();
     FastLED.delay(100);
 
-    for(int i=20; i<39; i++){
+    for(int i=15; i<NUM_LEDS; i++){
       leds_l[i].setRGB(0,0,0);
       leds_r[i].setRGB(0,0,0);
     }
@@ -262,9 +262,24 @@ void handleWebSocketMessage(void *arg, uint8_t *data, size_t len) {
   if (info->final && info->index == 0 && info->len == len && info->opcode == WS_TEXT) {
     data[len] = 0;
     if (strcmp((char*)data, "toggle") == 0) {
-      sp_mode = !sp_mode;
+      //sp_mode = !sp_mode;
       notifyClients();
     }
+  }
+}
+
+void modeDecode(uint8_t *inputdata){
+  if(strcmp((char*)inputdata, "tombo") == 0){
+    Serial.printf("Enabling %s mode\n", inputdata);
+    sp_mode = !sp_mode;
+  }else if(strcmp((char*)inputdata, "glowy") == 0){
+    Serial.printf("Enabling %s mode\n", inputdata);
+    sp_mode = !sp_mode;
+  }else if(strcmp((char*)inputdata, "rainbow") == 0){
+    Serial.printf("Enabling %s mode\n", inputdata);
+    sp_mode = !sp_mode;
+  }else{
+    Serial.printf("Unknown data received: %s\n",inputdata);
   }
 }
 
@@ -279,6 +294,8 @@ void onEvent(AsyncWebSocket *server, AsyncWebSocketClient *client, AwsEventType 
         break;
       case WS_EVT_DATA:
         handleWebSocketMessage(arg, data, len);
+        Serial.printf("Received: %s\n", data);
+        modeDecode(data);
         break;
       case WS_EVT_PONG:
       case WS_EVT_ERROR:

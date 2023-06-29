@@ -138,9 +138,9 @@ const char index_html[] PROGMEM = R"rawliteral(
       <div class="dropdown">
         <button class="dropbtn">Modo</button>
         <div class="dropdown-content">
-          <a href="ModoTombo">Modo tombo</a>
-          <a href="Rainbow">Rainbow RGB</a>
-          <a href="GlowyWhite">Glowy White</a>
+          <a onclick="sendString('tombo')">Modo tombo</a>
+          <a onclick="sendString('rainbow')">Rainbow RGB</a>
+          <a onclick="sendString('glowy')">Glowy White</a>
         </div>
 </div>
     </div>
@@ -185,6 +185,10 @@ const char index_html[] PROGMEM = R"rawliteral(
   }
   function toggle(){
     websocket.send('toggle');
+  }
+  /* Function to send string when each item is clicked */
+  function sendString(str) {
+      websocket.send(str);
   }
 </script>
 </body>
