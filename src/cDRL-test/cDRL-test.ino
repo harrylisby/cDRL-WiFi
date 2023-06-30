@@ -189,37 +189,7 @@ void triBarWrite(auto led_to_write[], int barDelay = 1, int offDelay = 200){
   FastLED.show();  
   
 }
-/*
-void triBarDualSequentialWrite(auto led1_to_write[], auto led2_to_write[], int barDelay = 1, int offDelay = 200){
-  Serial.println("TriBar Dual Sequential Write");
 
-  for(int i=0; i<NUM_LEDS;i++){
-    for(int i=0; i<BAR1; i++){
-      led1_to_write[i].setRGB(DIR_R,DIR_G,DIR_B);
-      led2_to_write[i].setRGB(DIR_R,DIR_G,DIR_B);
-      }
-    FastLED.show();
-    FastLED.delay(barDelay);
-    for(int i=BAR1; i<BAR2; i++){
-      led1_to_write[i].setRGB(DIR_R,DIR_G,DIR_B);
-      led2_to_write[i].setRGB(DIR_R,DIR_G,DIR_B);
-      }
-    FastLED.show();
-    FastLED.delay(barDelay);
-    for(int i=BAR2; i<BAR3; i++){
-      led1_to_write[i].setRGB(DIR_R,DIR_G,DIR_B);
-      led2_to_write[i].setRGB(DIR_R,DIR_G,DIR_B);
-      }
-    FastLED.show();
-    FastLED.delay(barDelay);
-    for(int i=0; i<NUM_LEDS;i++){
-      led1_to_write[i].setRGB(0,0,0);
-      led2_to_write[i].setRGB(0,0,0);
-      }
-    FastLED.delay(offDelay);
-    FastLED.show();  
- 
-}*/
 
 void dualSequentialWrite(auto led1_to_write[], auto led2_to_write[], auto ledopt1_to_write[], auto ledopt2_to_write[], int rampDelay = 1, int offDelay = 200){
   Serial.println("Dual Sequential Write");
@@ -317,6 +287,21 @@ void handleWebSocketMessage(void *arg, uint8_t *data, size_t len) {
       sp_mode = !sp_mode;
       notifyClients();
     }
+  }
+}
+
+void modeDecode(uint8_t *inputdata){
+  if(strcmp((char*)inputdata, "tombo") == 0){
+    Serial.printf("Enabling %s mode\n", inputdata);
+    sp_mode = !sp_mode;
+  }else if(strcmp((char*)inputdata, "glowy") == 0){
+    Serial.printf("Enabling %s mode\n", inputdata);
+    sp_mode = !sp_mode;
+  }else if(strcmp((char*)inputdata, "rainbow") == 0){
+    Serial.printf("Enabling %s mode\n", inputdata);
+    sp_mode = !sp_mode;
+  }else{
+    Serial.printf("Unknown data received: %s\n",inputdata);
   }
 }
 
