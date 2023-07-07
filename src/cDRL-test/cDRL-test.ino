@@ -76,6 +76,16 @@ uint32_t currtime = 0;
 uint32_t last_ctime = 0;
 bool op_led_stat=false;
 
+//limiting constants
+#define BAR1 22
+#define BAR2 44
+#define BAR3 66
+
+// //limiting constants
+// #define BAR1 4
+// #define BAR2 8
+// #define BAR3 14
+
 // Create AsyncWebServer object on port 80
 AsyncWebServer server(80);
 AsyncWebSocket ws("/ws");
@@ -100,14 +110,14 @@ void modoTombo(){
   int flashes = 2;
 
   for(int x = 0; x < flashes; x++){
-    for(int i=0; i<19; i++){
+    for(int i=0; i<BAR3; i++){
       leds_l[i].setRGB(0,0,255);
       leds_r[i].setRGB(0,0,255);
     }
     FastLED.show();
     FastLED.delay(100);
 
-    for(int i=0; i<19; i++){
+    for(int i=0; i<BAR3; i++){
       leds_l[i].setRGB(0,0,0);
       leds_r[i].setRGB(0,0,0);
     }
@@ -116,14 +126,14 @@ void modoTombo(){
   }
 
   for(int x = 0; x < flashes; x++){
-    for(int i=20; i<39; i++){
+    for(int i=BAR2; i<NUM_LEDS; i++){
       leds_l[i].setRGB(255,0,0);
       leds_r[i].setRGB(255,0,0);
     }
     FastLED.show();
     FastLED.delay(100);
 
-    for(int i=20; i<39; i++){
+    for(int i=BAR2; i<NUM_LEDS; i++){
       leds_l[i].setRGB(0,0,0);
       leds_r[i].setRGB(0,0,0);
     }
@@ -167,10 +177,6 @@ void sequentialWrite(auto led_to_write[], auto ledopt_to_write[], int rampDelay 
   
 }
 
-//limiting constants
-#define BAR1 22
-#define BAR2 44
-#define BAR3 66
 
 void triBarWrite(auto led_to_write[], int barDelay = 1, int offDelay = 200){
   Serial.println("Tri-Bar Write");
@@ -284,25 +290,58 @@ void handleWebSocketMessage(void *arg, uint8_t *data, size_t len) {
   if (info->final && info->index == 0 && info->len == len && info->opcode == WS_TEXT) {
     data[len] = 0;
     if (strcmp((char*)data, "toggle") == 0) {
-      sp_mode = !sp_mode;
+      //sp_mode = !sp_mode;
       notifyClients();
     }
   }
 }
 
+uint8_t spModeSelected = 0;
+
 void modeDecode(uint8_t *inputdata){
   if(strcmp((char*)inputdata, "tombo") == 0){
     Serial.printf("Enabling %s mode\n", inputdata);
     sp_mode = !sp_mode;
+    spModeSelected=1;
   }else if(strcmp((char*)inputdata, "glowy") == 0){
     Serial.printf("Enabling %s mode\n", inputdata);
     sp_mode = !sp_mode;
+    spModeSelected=2;
   }else if(strcmp((char*)inputdata, "rainbow") == 0){
     Serial.printf("Enabling %s mode\n", inputdata);
     sp_mode = !sp_mode;
+    spModeSelected=3;
+  }else if(strcmp((char*)inputdata, "desactivar") == 0){
+    Serial.printf("Disabling special mode\n", inputdata);
+    sp_mode = false;
+    spModeSelected=0;
   }else{
     Serial.printf("Unknown data received: %s\n",inputdata);
   }
+}
+
+void rainbowMode(){
+  fill_rainbow(leds_r,NUM_LEDS,0,10);
+  fill_rainbow(leds_l,NUM_LEDS,0,10);
+  FastLED.show();
+}
+
+void runSpMode(){
+  switch(spModeSelected){
+    case 0:
+      
+      break;
+    case 1:
+      modoTombo();
+      break;
+    case 2:
+      rainbowMode();
+      break;
+    case 3: 
+      
+      break;   
+  }
+
 }
 
 void onEvent(AsyncWebSocket *server, AsyncWebSocketClient *client, AwsEventType type,
@@ -316,6 +355,8 @@ void onEvent(AsyncWebSocket *server, AsyncWebSocketClient *client, AwsEventType 
         break;
       case WS_EVT_DATA:
         handleWebSocketMessage(arg, data, len);
+        Serial.printf("Received: %s\n", data);
+        modeDecode(data);
         break;
       case WS_EVT_PONG:
       case WS_EVT_ERROR:
@@ -406,6 +447,6 @@ void loop(){
     //dualSequentialWrite(leds_l, leds_r, leds_opt_l, leds_opt_r, 5, 200);
     //dualSequentialWrite(leds_r,leds_opt_r,5, 200);
   }else{
-    modoTombo();
+    runSpMode();
   }
 }

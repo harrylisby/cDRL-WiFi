@@ -129,7 +129,7 @@ const char index_html[] PROGMEM = R"rawliteral(
 </head>
 <body>
   <div class="topnav">
-    <h1>cDRL Lights</h1>
+    <h1>autoptics</h1>
   </div>
   <div class="content">
     <div class="card">
@@ -138,10 +138,12 @@ const char index_html[] PROGMEM = R"rawliteral(
       <div class="dropdown">
         <button class="dropbtn">Modo</button>
         <div class="dropdown-content">
-          <a href="ModoTombo" onclick="sendString('tombo')">Modo tombo</a>
-          <a href="Rainbow" onclick="sendString('rainbow')">Rainbow RGB</a>
-          <a href="GlowyWhite" onclick="sendString('glowy')">Glowy White</a>
+          <a onclick="sendString('desactivar')">Desactivar</a>
+          <a onclick="sendString('tombo')">Modo tombo</a>
+          <a onclick="sendString('rainbow')">Rainbow RGB</a>
+          <a onclick="sendString('glowy')">Glowy White</a>
         </div>
+      <h3>2023 autoptics V1.0 - Engell</h3>
 </div>
     </div>
   </div>
