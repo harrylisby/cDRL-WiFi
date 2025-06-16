@@ -1,196 +1,101 @@
 const char index_html[] PROGMEM = R"rawliteral(
-<!DOCTYPE HTML><html>
+<!DOCTYPE HTML><html lang="es">
 <head>
-  <title>LisbyLED cDRL Control</title>
+  <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Autoptiks LED Control</title>
+  <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;700&display=swap" rel="stylesheet">
+  <link rel="icon" href="data:,">
   <style>
-  html {
-    font-family: Arial, Helvetica, sans-serif;
-    text-align: center;
-  }
-  h1 {
-    font-size: 1.8rem;
-    color: white;
-  }
-  h2{
-    font-size: 1.5rem;
-    font-weight: bold;
-    color: #143642;
-  }
-  .topnav {
-    overflow: hidden;
-    background-color: #143642;
-  }
-  body {
-    margin: 0;
-  }
-  .content {
-    padding: 30px;
-    max-width: 600px;
-    margin: 0 auto;
-  }
-  .card {
-    background-color: #F8F7F9;;
-    box-shadow: 2px 2px 12px 1px rgba(140,140,140,.5);
-    padding-top:10px;
-    padding-bottom:20px;
-  }
-  .button {
-    padding: 15px 50px;
-    font-size: 24px;
-    text-align: center;
-    outline: none;
-    color: #fff;
-    background-color: #0f8b8d;
-    border: none;
-    border-radius: 5px;
-    -webkit-touch-callout: none;
-    -webkit-user-select: none;
-    -khtml-user-select: none;
-    -moz-user-select: none;
-    -ms-user-select: none;
-    user-select: none;
-    -webkit-tap-highlight-color: rgba(0,0,0,0);
-   }
-   /*.button:hover {background-color: #0f8b8d}*/
-   .button:active {
-     background-color: #0f8b8d;
-     box-shadow: 2 2px #CDCDCD;
-     transform: translateY(2px);
-   }
-   .state {
-     font-size: 1.5rem;
-     color:#8c8c8c;
-     font-weight: bold;
-   }
-    /* Dropdown Button */
-    .dropbtn {
-      background-color: #0f8b8d;
-      color: #fff;
-      padding: 15px 50px;
-      font-size: 24px;
-      text-align: center;
-      outline: none;
-      border: none;
-      border-radius: 5px;
-      -webkit-touch-callout: none;
-      -webkit-user-select: none;
-      -khtml-user-select: none;
-      -moz-user-select: none;
-      -ms-user-select: none;
-      user-select: none;
-      -webkit-tap-highlight-color: rgba(0,0,0,0);
-
+    :root {
+      --primary: #0f8b8d;
+      --bg: #f0f2f5;
+      --card: #fff;
+      --text: #333;
+      --accent: #143642;
+      --radius: 8px;
     }
-
-    .dropbtn:active {
-      background-color: #0f8b8d;
-      box-shadow: 2 2px #CDCDCD;
-      transform: translateY(2px);
-
-    }
-
-    /* The container <div> - needed to position the dropdown content */
-    .dropdown {
-      position: relative;
-      display: inline-block;
-    }
-
-    /* Dropdown Content (Hidden by Default) */
-    .dropdown-content {
-      display: none;
-      position: absolute;
-      background-color: #f1f1f1;
-      min-width: 160px;
-      box-shadow: 0px 8px 16px 0px rgba(0,0,0,0.2);
-      z-index: 1;
-    }
-
-    /* Links inside the dropdown */
-    .dropdown-content a {
-      color: black;
-      padding: 12px 16px;
-      text-decoration: none;
-      display: block;
-    }
-
-    /* Change color of dropdown links on hover */
-    .dropdown-content a:hover {background-color: #ddd;}
-
-    /* Show the dropdown menu on hover */
-    .dropdown:hover .dropdown-content {display: block;}
-
-    /* Change the background color of the dropdown button when the dropdown content is shown */
-    .dropdown:hover .dropbtn {background-color: #3e8e41;}
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    html,body { height:100%; font-family:'Roboto',sans-serif; background:var(--bg); color:var(--text); }
+    .topnav { background:var(--accent); padding:1rem; text-align:center; }
+    .topnav h1 { color:#fff; font-size:2rem; text-transform:uppercase; letter-spacing:1px; }
+    .content { display:flex; justify-content:center; align-items:flex-start; padding:2rem; }
+    .card { background:var(--card); border-radius:var(--radius); box-shadow:0 4px 12px rgba(0,0,0,0.1); width:100%; max-width:400px; padding:2rem; }
+    .card h2 { margin-bottom:1rem; color:var(--accent); font-size:1.5rem; text-transform:uppercase; letter-spacing:0.5px; }
+    .state { margin-bottom:1.5rem; font-size:1.2rem; }
+    .dropdown { position:relative; margin-bottom:1.5rem; }
+    .dropbtn { width:100%; background:var(--primary); color:#fff; padding:.75rem; font-size:1.1rem; border:none; border-radius:var(--radius); cursor:pointer; transition:background 0.3s; }
+    .dropbtn:hover { background:#0e7b7d; }
+    .dropdown-content { display:none; position:absolute; top:110%; left:0; background:var(--card); box-shadow:0 4px 12px rgba(0,0,0,0.1); border-radius:var(--radius); width:100%; overflow:hidden; transition:opacity 0.3s; opacity:0; }
+    .dropdown:hover .dropdown-content { display:block; opacity:1; }
+    .dropdown-content a { display:block; padding:.75rem 1rem; text-decoration:none; color:var(--text); transition:background 0.2s; }
+    .dropdown-content a:hover { background:var(--bg); }
+    .color-picker { display:flex; align-items:center; gap:.5rem; margin-top:1rem; }
+    .color-picker input[type="color"] { border:none; width:2.5rem; height:2.5rem; cursor:pointer; }
+    .color-preview { width:2.5rem; height:2.5rem; border-radius:50%; border:1px solid #ccc; }
+    .button { background:var(--primary); color:#fff; border:none; border-radius:var(--radius); padding:.75rem 1.5rem; cursor:pointer; transition:transform 0.1s; }
+    .button:active { transform:translateY(1px); }
+    .slider { width:100%; margin-top:1rem; }
   </style>
-<title>LisbyLED cDRL Control</title>
-<meta name="viewport" content="width=device-width, initial-scale=1">
-<link rel="icon" href="data:,">
 </head>
 <body>
-  <div class="topnav">
-    <h1>cDRL Lights</h1>
-  </div>
+  <div class="topnav"><h1>Autoptiks LED Control</h1></div>
   <div class="content">
     <div class="card">
-      <h2>Configuracion</h2>
+      <h2>Configuración</h2>
       <p class="state">Estado: <span id="state">%STATE%</span></p>
       <div class="dropdown">
         <button class="dropbtn">Modo</button>
         <div class="dropdown-content">
-          <a onclick="sendString('tombo')">Modo tombo</a>
+          <a onclick="sendString('tombo')">Modo Tombo</a>
           <a onclick="sendString('rainbow')">Rainbow RGB</a>
           <a onclick="sendString('glowy')">Glowy White</a>
+          <a onclick="sendString('static')">Static Color</a>
+          <a onclick="sendString('off')">Off</a>
         </div>
-</div>
+      </div>
+      <div class="color-picker">
+        <label for="colorPicker">Color:</label>
+        <input type="color" id="colorPicker" value="#ffffff">
+        <div id="colorPreview" class="color-preview"></div>
+        <button class="button" id="setColorBtn">Set Color</button>
+      </div>
+      <div class="slider">
+        <label for="brightnessSlider">Brillo:</label>
+        <input type="range" id="brightnessSlider" min="0" max="255" value="255" oninput="updateBrightnessPreview(this.value)">
+      </div>
+      <button class="button" id="setBrightnessBtn">Set Brightness</button>
     </div>
   </div>
-<script>
-  var gateway = `ws://${window.location.hostname}/ws`;
-  var websocket;
-  window.addEventListener('load', onLoad);
-  function initWebSocket() {
-    console.log('Trying to open a WebSocket connection...');
-    websocket = new WebSocket(gateway);
-    websocket.onopen    = onOpen;
-    websocket.onclose   = onClose;
-    websocket.onmessage = onMessage; // <-- add this line
-  }
-  function onOpen(event) {
-    console.log('Connection opened');
-  }
-  function onClose(event) {
-    console.log('Connection closed');
-    setTimeout(initWebSocket, 2000);
-  }
-  function onMessage(event) {
-    var state;
-    if (event.data == "1"){
-      state = "ON";
+  <script>
+    const gateway = `ws://${window.location.hostname}/ws`;
+    let websocket;
+    window.addEventListener('load', () => {
+      websocket = new WebSocket(gateway);
+      websocket.onopen = () => console.log('WS open');
+      websocket.onclose = () => setTimeout(()=>location.reload(),2000);
+      websocket.onmessage = evt => {
+        document.getElementById('state').textContent = (evt.data=='1')?'ON':'OFF';
+      };
+      document.getElementById('setColorBtn').onclick = () => {
+        const col = document.getElementById('colorPicker').value.substring(1);
+        websocket.send(`color:${col}`);
+      };
+      document.getElementById('setBrightnessBtn').onclick = () => {
+        const b = document.getElementById('brightnessSlider').value;
+        websocket.send(`bright:${b}`);
+      };
+      document.getElementById('colorPicker').oninput = (e) => {
+        document.getElementById('colorPreview').style.background = e.target.value;
+      };
+    });
+    function sendString(str){
+      if(websocket && websocket.readyState===1) websocket.send(str);
     }
-    else{
-      state = "OFF";
+    function updateBrightnessPreview(val){
+      // optional: update UI preview
     }
-    document.getElementById('state').innerHTML = state;
-  }
-  function onLoad(event) {
-    initWebSocket();
-    initButton();
-  }
-  function initButton() {
-    document.getElementById('button').addEventListener('click', toggle);
-  }
-  function initDropdown() {
-    document.getElementById('dropdown-content').addEventListener('click', toggle);
-  }
-  function toggle(){
-    websocket.send('toggle');
-  }
-  /* Function to send string when each item is clicked */
-  function sendString(str) {
-      websocket.send(str);
-  }
-</script>
+  </script>
 </body>
 </html>
 )rawliteral";
