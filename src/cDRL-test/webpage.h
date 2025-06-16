@@ -3,7 +3,7 @@ const char index_html[] PROGMEM = R"rawliteral(
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>Autoptiks LED Control</title>
+  <title>Autoptiks</title>
   <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;700&display=swap" rel="stylesheet">
   <link rel="icon" href="data:,">
   <style>
@@ -39,7 +39,7 @@ const char index_html[] PROGMEM = R"rawliteral(
   </style>
 </head>
 <body>
-  <div class="topnav"><h1>Autoptiks LED Control</h1></div>
+  <div class="topnav"><h1>Autoptiks</h1></div>
   <div class="content">
     <div class="card">
       <h2>Configuración</h2>
