@@ -155,9 +155,9 @@ void setup(){
   WiFi.softAP(ssid,password);
 
   // mDNS responder
-  if(MDNS.begin("cdrllights")) {
+  if(MDNS.begin("alfaled")) {
     MDNS.addService("http","tcp",80);
-    Serial.println("mDNS: cdrllights.local");
+    Serial.println("mDNS: alfaled.local");
   }
 
   initWebSocket();
@@ -189,8 +189,7 @@ void loop(){
   }
 
   if(!sp_mode){
-    // here you’d call your mainStateMachine() if still using turn signals,
-    // or simply turn DRL off: DRLWrite(0,0,0);
+    mainStateMachine();
   } else {
     switch(currentMode){
       case MODO_TOMBO:
